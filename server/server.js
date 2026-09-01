@@ -19,6 +19,7 @@ const PORT = process.env.PORT || 3001;
 
 const origins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
 if (process.env.PUBLIC_ORIGIN) origins.push(process.env.PUBLIC_ORIGIN);
+if (process.env.RENDER_EXTERNAL_URL) origins.push(process.env.RENDER_EXTERNAL_URL);
 
 app.use(cors({ origin: origins }));
 app.use(express.json({ limit: '32kb' }));
