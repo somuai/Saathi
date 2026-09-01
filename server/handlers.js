@@ -365,6 +365,33 @@ function extractTranscript(data) {
     .filter((t) => t.content);
 }
 
+const THEME_RULES = [
+  ['The loss itself', /died|death|gone|miss|ammi|abba|papa|mummy|maa\b|dad\b|mom\b|passed|grief/],
+  ['Exam / studies', /exam|jee|neet|board|rank|kota|paper|marks|coaching/],
+  ['Family / izzat', /family|parents|izzat|uncle|house|relatives|shame/],
+  ['Self-blame', /failed|my fault|useless|should have|i ruined|i can't|worthless/],
+  ['Sleep / body', /sleep|tired|eat|insomnia|headache|body/],
+  ['Isolation', /alone|nobody|lonely|no one|quiet/],
+];
+
+function themeMix(userText) {
+  const scores = THEME_RULES.map(([label, re]) => {
+    const hits = userText.match(new RegExp(re.source, 'gi'));
+    return { label, value: hits ? hits.length : 0 };
+  });
+  const total = scores.reduce((n, s) => n + s.value, 0);
+  if (!total) {
+    return [
+      { label: 'Being heard', value: 50 },
+      { label: 'Naming the weight', value: 30 },
+      { label: 'Next hour', value: 20 },
+    ];
+  }
+  return scores
+    .filter((s) => s.value)
+    .map((s) => ({ label: s.label, value: Math.round((s.value / total) * 100) }));
+}
+
 function localSummary(turns) {
   const userText = turns
     .filter((t) => t.role === 'user')
@@ -380,19 +407,105 @@ function localSummary(turns) {
     ? `Tonight you spoke, and Maya stayed with you. You named this: “${heard.slice(0, 220)}${heard.length > 220 ? '…' : ''}”. That is enough for one sitting.`
     : 'Tonight you sat with Maya for a short while. Even a few minutes counts. You do not have to have said everything.';
   const next = ['Drink a glass of water and stay in this room for the next ten minutes.'];
-  if (/exam|jee|neet|board|rank|kota|paper/.test(userText)) {
+  const patterns = [];
+  if (/failed|my fault|useless|should have/.test(userText)) {
+    patterns.push('All-or-nothing thinking — “I failed” covering a harder, more human story.');
+  }
+  if (/exam|jee|neet|rank/.test(userText)) {
+    patterns.push('The rank or the paper is standing in for worth. That is common. It is still heavy.');
     next.push('Do not open the exam app or compare ranks tonight. That can wait until morning.');
   } else if (/divorce|broke|left me|marriage|husband|wife|ex\b/.test(userText)) {
     next.push('One kind thing for your body — tea, a wash, or sitting by a window.');
   } else if (/business|shop|laid off|job|company|failed/.test(userText)) {
+    patterns.push('Collapsing a whole chapter into one word: failed. The chapter was longer than that.');
     next.push('Write one sentence: what you carried today. Not a plan. One sentence.');
   } else if (/died|death|passed|ammi|abba|papa|mummy|maa\b|dad\b|mom\b/.test(userText)) {
     next.push('If a photo or a belonging is nearby, you may sit with it. You do not have to put it away.');
   } else {
     next.push('If you can, name one person you could text tomorrow. You do not have to text tonight.');
   }
+  if (!patterns.length) {
+    patterns.push('Nothing here is a character flaw. Grief often looks like self-blame or shutting the door. We can notice that without punishing it.');
+  }
   next.push('If you feel unsafe: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019.');
-  return { summary, next };
+  return {
+    summary,
+    data: summary,
+    assessment:
+      'This was a short companion sitting, not a clinical assessment. What showed up is grief or a life-chapter loss. No diagnosis is being made.',
+    patterns,
+    next,
+    perWeek: '2–3 short sittings this week, then weekly if it still helps.',
+    sittings: 'About 6–8 companion sittings over 4 weeks, then pause. If it stays heavy, a human counsellor is the next step.',
+    themes: themeMix(userText),
+  };
+}
+
+const REPORT_SYSTEM = `You write an after-sitting note for Saath, an AI grief companion in India. You are not a licensed clinician. Never diagnose. Never prescribe medication. Never shame.
+
+Therapists use DAP notes: Data (what was said), Assessment (clinical impression without a disease label here), Plan (next steps, frequency).
+
+Return JSON only:
+{
+  "summary": "3-5 warm sentences of Data: what they sat with tonight",
+  "assessment": "2-3 sentences. Not a diagnosis. What the sitting suggests about load and coping.",
+  "patterns": ["2-4 unhelpful patterns — NEVER call them mistakes or faults. CBT-style: all-or-nothing, self-blame, isolation, rank=worth. Gentle."],
+  "next": ["3 tiny next-hour actions"],
+  "perWeek": "how often to return this week, e.g. 2-3 short sittings",
+  "sittings": "suggested companion sittings over 4 weeks, plus when to see a human counsellor",
+  "themes": [{"label":"theme","value":number}]
+}
+themes values are percentages that sum to 100. Labels from: The loss itself, Exam / studies, Family / izzat, Self-blame, Sleep / body, Isolation, Being heard.
+If crisis language appeared, last next item must be India helplines: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019, Tele-MANAS 14416.
+No markdown.`;
+
+function parseReport(raw, fallbackTurns) {
+  try {
+    const jsonText = String(raw).replace(/```json|```/g, '').trim();
+    const parsed = JSON.parse(jsonText);
+    if (!parsed?.summary) return localSummary(fallbackTurns);
+    return {
+      summary: String(parsed.summary).slice(0, 900),
+      assessment: String(parsed.assessment || '').slice(0, 600),
+      patterns: (Array.isArray(parsed.patterns) ? parsed.patterns : []).map((x) => String(x).slice(0, 240)).slice(0, 4),
+      next: (Array.isArray(parsed.next) ? parsed.next : []).map((x) => String(x).slice(0, 220)).slice(0, 4),
+      perWeek: String(parsed.perWeek || '').slice(0, 180),
+      sittings: String(parsed.sittings || '').slice(0, 220),
+      themes: Array.isArray(parsed.themes)
+        ? parsed.themes
+            .map((t) => ({ label: String(t.label || '').slice(0, 40), value: Number(t.value) || 0 }))
+            .filter((t) => t.label && t.value > 0)
+            .slice(0, 6)
+        : [],
+    };
+  } catch {
+    return localSummary(fallbackTurns);
+  }
+}
+
+async function callGemini(systemPrompt, userText) {
+  const key = process.env.GEMINI_API_KEY;
+  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+  let last = 'Gemini unavailable';
+  for (const model of models) {
+    const response = await fetch(
+      `https://generativelanguage.googleapis.com/v1beta/models/${model}:generateContent?key=${encodeURIComponent(key)}`,
+      {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          systemInstruction: { parts: [{ text: systemPrompt }] },
+          contents: [{ role: 'user', parts: [{ text: userText }] }],
+          generationConfig: { temperature: 0.4, maxOutputTokens: 700, responseMimeType: 'application/json' },
+        }),
+      },
+    );
+    const data = await response.json().catch(() => ({}));
+    const text = data.candidates?.[0]?.content?.parts?.map((p) => p.text).join('') || '';
+    if (response.ok && text) return text;
+    last = data.error?.message || `Gemini ${response.status}`;
+  }
+  throw new Error(last);
 }
 
 async function waitForTranscript(id) {
@@ -425,20 +538,23 @@ export async function conversationSummaryHandler(req, res) {
 
   try {
     const turns = await waitForTranscript(id);
-    if (process.env.XAI_API_KEY && turns.length) {
-      const blob = turns.map((t) => `${t.role === 'user' ? 'You' : 'Maya'}: ${t.content}`).join('\n');
-      const raw = await callXai(
-        `You write a brief after-call note for Saath, an AI grief companion in India. Return JSON only: {"summary":"2-4 warm sentences, no diagnosis","next":["three tiny next-hour actions"]}. No markdown. No medical advice. If crisis language appeared, the last next-step must be India helplines: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019.`,
-        [{ role: 'user', content: blob.slice(0, 6000) }],
-      );
-      const jsonText = raw.replace(/```json|```/g, '').trim();
-      const parsed = JSON.parse(jsonText);
-      if (parsed?.summary) {
-        res.status(200).json({
-          summary: String(parsed.summary).slice(0, 800),
-          next: (Array.isArray(parsed.next) ? parsed.next : []).map((x) => String(x).slice(0, 200)).slice(0, 4),
-        });
+    const blob = turns.map((t) => `${t.role === 'user' ? 'You' : 'Maya'}: ${t.content}`).join('\n').slice(0, 6000);
+    if (blob && process.env.GEMINI_API_KEY) {
+      try {
+        const raw = await callGemini(REPORT_SYSTEM, blob);
+        res.status(200).json(parseReport(raw, turns));
         return;
+      } catch {
+        /* fall through */
+      }
+    }
+    if (blob && process.env.XAI_API_KEY) {
+      try {
+        const raw = await callXai(REPORT_SYSTEM, [{ role: 'user', content: blob }]);
+        res.status(200).json(parseReport(raw, turns));
+        return;
+      } catch {
+        /* fall through */
       }
     }
     res.status(200).json(localSummary(turns));
