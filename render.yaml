@@ -1,0 +1,17 @@
+services:
+  - type: web
+    name: saath
+    runtime: node
+    plan: free
+    buildCommand: npm install && npm run build
+    startCommand: npm start
+    healthCheckPath: /api/health
+    envVars:
+      - key: NODE_VERSION
+        value: '20'
+      - key: TAVUS_API_KEY
+        sync: false
+      - key: TAVUS_PAL_ID
+        value: pe877b0fc929
+      - key: PUBLIC_ORIGIN
+        sync: false

@@ -1,67 +1,46 @@
-# GriefCompanion
+# Saath
 
-A compassionate AI avatar you can talk to after loss — available 24/7, no judgment, no advice you didn't ask for. Voice in, voice out, and a face that listens. No sign-up. Conversations are never stored on the server.
+A working **MVP**: a live video call with **Maya**, an AI grief companion for India. Not a counsellor. No sign-up. We do not store what you say.
 
-This is an AI companion, **not therapy**.
+This is the smallest thing that can be judged as a product — not a finished therapy service.
 
-## Local setup
+## For reviewers
 
-You need Node.js 18+.
+- Open the live URL in Chrome (laptop if you can).
+- Allow camera and microphone.
+- Optional chips, then **Join a video call with Maya**.
+- **One live room at a time.** A second Join ends the first (Tavus free tier).
+- Calls cap at **about 5 minutes**. That is the plan limit, not Maya hanging up.
+- If video is busy, stay on the page — in-app chat still works.
+- Crisis lines stay on screen: iCall 9152987821 · Vandrevala 9999666555 · KIRAN 1800-599-0019.
+
+## Product choices
+
+| Call | Choice |
+|---|---|
+| Companion | One person: Maya (Tavus PAL, Mary–Home, English + Hindi) |
+| Session | Name → stage → what is heaviest → one breath → stay on that wound |
+| Data | Pulse counts only. No transcripts. |
+| North star | `call_started` — live video rooms that actually open |
+
+## Run locally
 
 ```bash
-cd grief-companion
 npm install
-cp server/.env.example server/.env
-```
-
-Add a key to `server/.env`:
-
-```
-XAI_API_KEY=your_key_here
-```
-
-Get an xAI key at [console.x.ai](https://console.x.ai). Then:
-
-```bash
+# server/.env: TAVUS_API_KEY + TAVUS_PAL_ID
 npm run dev
 ```
 
-- Client: http://localhost:5173
-- Server (API proxy): http://localhost:3001
+App: http://127.0.0.1:5173  
+Pulse: nav → **Pulse**
 
-Open Chrome or Edge for the best voice input (Web Speech API). Voice output uses the browser's built-in speech synthesis — no extra API key.
+## Deploy (Render)
 
-Optional: if you only have Anthropic, set `ANTHROPIC_API_KEY` instead. The proxy will use `claude-sonnet-4-6`.
+Web Service from this repo.
 
-## Deploy to Vercel
+- Build: `npm install && npm run build`
+- Start: `npm start`
+- Health: `/api/health`
+- Env: `NODE_ENV=production`, `TAVUS_API_KEY`, `TAVUS_PAL_ID=pe877b0fc929`, `PUBLIC_ORIGIN=https://<service>.onrender.com`
 
-1. Push this repo to GitHub.
-2. Import the project in [Vercel](https://vercel.com).
-3. Add environment variable **`XAI_API_KEY`** (Project → Settings → Environment Variables). Use `ANTHROPIC_API_KEY` only as a fallback.
-4. Deploy. The `/api/*` routes are serverless; the Vite app is the static frontend.
-
-Do not put any API key in client code.
-
-## What is in / out of MVP
-
-**In:** animated SVG avatar, TTS + STT, text fallback, in-session memory, AI disclosure, companion name + 3 faces, transcript download, waitlist, crisis-line footer.
-
-**Out:** accounts, cross-session memory, storing grief content, mobile apps, therapist booking.
-
-## Outreach copy
-
-Reddit (r/grief):
-
-> I've been thinking about how isolating grief can be — especially late at night when you don't want to wake anyone. I built a small tool: an AI companion you can talk to, voice or text. It's not therapy, it's just a face that listens. No sign-up, completely free.
->
-> I'm an intern building this as a product project and I genuinely want to know: does something like this feel helpful or does it feel wrong to you? Any feedback — including "this is a terrible idea" — is useful.
->
-> Link: [your-vercel-url]
->
-> Full transparency: you're talking to an AI. I'm not collecting your conversations.
-
-Twitter/X:
-
-> Built an AI grief companion overnight. Talk to it. Download your session after. No login, no ads, just a face that listens.
-> Grief is isolating. This won't fix it, but maybe it helps at 2am.
-> [link]
+Do not commit API keys.

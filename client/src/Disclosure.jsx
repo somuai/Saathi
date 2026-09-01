@@ -1,5 +1,5 @@
 export default function Disclosure({ name, onConfirm, onBack }) {
-  const companion = name?.trim() || 'Ava';
+  const companion = name?.trim() || 'Maya';
 
   return (
     <div className="overlay fade-in" role="dialog" aria-labelledby="disclosure-title">
@@ -7,13 +7,13 @@ export default function Disclosure({ name, onConfirm, onBack }) {
         <p className="eyebrow">Before you begin</p>
         <h2 id="disclosure-title">You&apos;re talking to an AI</h2>
         <p>
-          {companion} is an AI — not a therapist, not a human. It can&apos;t replace professional
-          support, but it can listen without judgment. Be as open as you feel comfortable.
+          {companion} is an AI — not a counsellor, not a human. It can&apos;t replace professional
+          support, but it can listen without judgment. Be as open as you feel comfortable. We speak
+          English for now.
         </p>
         <p className="crisis-note">
-          If you&apos;re in crisis, please contact iCall (India:{' '}
-          <a href="tel:9152987821">9152987821</a>) or the 988 Lifeline (US:{' '}
-          <a href="tel:988">988</a>).
+          If you&apos;re in crisis, please call iCall at <a href="tel:9152987821">9152987821</a> or
+          Vandrevala at <a href="tel:9999666555">9999666555</a>.
         </p>
         <div className="overlay-actions">
           <button type="button" className="btn-ghost" onClick={onBack}>

@@ -1,19 +1,50 @@
 import express from 'express';
 import cors from 'cors';
-import { chatHandler, waitlistHandler, healthHandler } from './handlers.js';
+import path from 'path';
+import { fileURLToPath } from 'url';
+import {
+  chatHandler,
+  waitlistHandler,
+  healthHandler,
+  eventHandler,
+  pulseHandler,
+  avatarSessionHandler,
+  conversationStatusHandler,
+  conversationEndHandler,
+} from './handlers.js';
 
+const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
 const PORT = process.env.PORT || 3001;
 
-app.use(cors({ origin: ['http://localhost:5173', 'http://127.0.0.1:5173'] }));
+const origins = ['http://localhost:5173', 'http://127.0.0.1:5173'];
+if (process.env.PUBLIC_ORIGIN) origins.push(process.env.PUBLIC_ORIGIN);
+
+app.use(cors({ origin: origins }));
 app.use(express.json({ limit: '32kb' }));
 
 app.get('/api/health', healthHandler);
+app.get('/api/pulse', pulseHandler);
 app.post('/api/chat', chatHandler);
 app.post('/api/waitlist', waitlistHandler);
+app.post('/api/event', eventHandler);
+app.post('/api/avatar-session', avatarSessionHandler);
+app.get('/api/conversation/:id', conversationStatusHandler);
+app.post('/api/conversation/:id/end', conversationEndHandler);
+
+if (process.env.NODE_ENV === 'production') {
+  const dist = path.join(__dirname, '..', 'client', 'dist');
+  app.use(express.static(dist));
+  app.get(/^(?!\/api).*/, (req, res, next) => {
+    if (req.method !== 'GET') return next();
+    res.sendFile(path.join(dist, 'index.html'), (err) => {
+      if (err) next();
+    });
+  });
+}
 
 app.listen(PORT, () => {
-  console.log(`GriefCompanion server on http://localhost:${PORT}`);
+  console.log(`Saath server on http://localhost:${PORT}`);
 });
 
 export default app;

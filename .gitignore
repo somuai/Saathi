@@ -1,8 +1,16 @@
 .env
 .env.local
+server/.env
+server/pulse.json
 node_modules
 dist
 .vercel
 .DS_Store
 *.log
 .vite
+.copy-ok
+demo/
+deck/unpacked
+deck/slides
+deck/*.pptx
+._*

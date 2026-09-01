@@ -1,7 +1,10 @@
 import { useEffect, useMemo, useRef, useState } from 'react';
-import Avatar from './Avatar.jsx';
+import VideoAvatar from './VideoAvatar.jsx';
 import Waitlist from './Waitlist.jsx';
 import { getSystemPrompt } from './system-prompt.js';
+import { getPersona, greetingFor, pickVoice } from './personas.js';
+import { track } from './analytics.js';
+import { demoReply } from './demo-replies.js';
 
 const SpeechRecognition =
   typeof window !== 'undefined'
@@ -11,24 +14,10 @@ const SpeechRecognition =
 const CRISIS_RE =
   /\b(suicid(?:e|al)?|kill myself|killing myself|want to die|end my life|self[- ]harm|don'?t want to (?:live|be alive))\b/i;
 
-const PREFERRED_VOICES = ['samantha', 'karen', 'moira', 'victoria', 'allison', 'susan', 'zoe'];
-
-function pickVoice() {
-  const voices = window.speechSynthesis?.getVoices?.() || [];
-  const lower = (v) => v.name.toLowerCase();
-  return (
-    voices.find((v) => PREFERRED_VOICES.some((n) => lower(v).includes(n))) ||
-    voices.find((v) => v.lang?.startsWith('en') && v.name.toLowerCase().includes('female')) ||
-    voices.find((v) => v.lang?.startsWith('en')) ||
-    voices[0] ||
-    null
-  );
-}
-
 function formatTranscript(companionName, messages) {
   const date = new Date().toLocaleString();
   const lines = [
-    `GriefCompanion Session — ${date}`,
+    `Saath session — ${date}`,
     `Companion: ${companionName}`,
     '---',
     ...messages.map((m) => `${m.role === 'assistant' ? companionName : 'You'}: ${m.content}`),
@@ -37,10 +26,16 @@ function formatTranscript(companionName, messages) {
   return lines.join('\n');
 }
 
-export default function Conversation({ companionName, avatarStyle, onStartOver }) {
+export default function Conversation({
+  companionName,
+  avatarStyle,
+  ageId = 'unspecified',
+  lossId = 'unspecified',
+  onStartOver,
+}) {
+  const persona = useMemo(() => getPersona(ageId, lossId), [ageId, lossId]);
   const greeting = useMemo(
-    () =>
-      `Hi. I'm ${companionName}. I'm an AI, here to listen — no judgment, no rush. What's on your mind today?`,
+    () => greetingFor(companionName),
     [companionName],
   );
 
@@ -53,12 +48,18 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
   const [showCrisis, setShowCrisis] = useState(false);
   const [ending, setEnding] = useState(false);
   const [error, setError] = useState('');
+  const [demoMode, setDemoMode] = useState(false);
 
   const logRef = useRef(null);
   const recognitionRef = useRef(null);
   const spokenGreeting = useRef(false);
   const messagesRef = useRef(messages);
+  const userTurns = useRef(0);
   messagesRef.current = messages;
+
+  useEffect(() => {
+    track('session_start', { age: ageId, loss: lossId });
+  }, [ageId, lossId]);
 
   useEffect(() => {
     if (logRef.current) {
@@ -77,9 +78,9 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
     if (!window.speechSynthesis) return;
     window.speechSynthesis.cancel();
     const utter = new SpeechSynthesisUtterance(text);
-    utter.rate = 0.9;
-    utter.pitch = 1.0;
-    const voice = pickVoice();
+    utter.rate = persona.age.rate;
+    utter.pitch = persona.age.pitch;
+    const voice = pickVoice(persona.age.voices);
     if (voice) utter.voice = voice;
     utter.onstart = () => setIsSpeaking(true);
     utter.onend = () => setIsSpeaking(false);
@@ -93,7 +94,7 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
       spokenGreeting.current = true;
       speak(greeting);
     };
-    const warm = () => pickVoice();
+    const warm = () => pickVoice(persona.age.voices);
     warm();
     window.speechSynthesis?.addEventListener?.('voiceschanged', warm);
     if (window.speechSynthesis?.getVoices?.().length) playGreeting();
@@ -105,20 +106,26 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
       window.speechSynthesis?.removeEventListener?.('voiceschanged', playGreeting);
       window.speechSynthesis?.cancel();
     };
-  }, [greeting]);
+  }, [greeting, persona.age.voices]);
 
-  async function sendMessage(text) {
+  async function sendMessage(text, inputType = 'text') {
     const content = text.trim();
     if (!content || isLoading) return;
 
     stopSpeaking();
     setInputText('');
     setError('');
-    if (CRISIS_RE.test(content)) setShowCrisis(true);
+    if (CRISIS_RE.test(content)) {
+      setShowCrisis(true);
+      track('crisis_shown');
+    }
 
     const next = [...messagesRef.current, { role: 'user', content }];
     setMessages(next);
     setIsLoading(true);
+    track('turn_user', { age: ageId, loss: lossId, input: inputType });
+    userTurns.current += 1;
+    if (userTurns.current === 3) track('session_3plus', { age: ageId, loss: lossId });
 
     try {
       const res = await fetch('/api/chat', {
@@ -126,20 +133,21 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
         headers: { 'Content-Type': 'application/json' },
         body: JSON.stringify({
           messages: next,
-          systemPrompt: getSystemPrompt(companionName),
+          systemPrompt: getSystemPrompt(companionName, { ageId, lossId }),
         }),
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'I could not reply just then.');
       const reply = data.reply?.trim();
       if (!reply) throw new Error('Empty reply.');
+      setDemoMode(false);
       setMessages([...next, { role: 'assistant', content: reply }]);
       speak(reply);
-    } catch (err) {
-      setError(
-        err.message ||
-          'Something went quiet on my side. You can try again whenever you are ready.',
-      );
+    } catch {
+      const reply = demoReply(content, companionName);
+      setDemoMode(true);
+      setMessages([...next, { role: 'assistant', content: reply }]);
+      speak(reply);
     } finally {
       setIsLoading(false);
     }
@@ -147,7 +155,7 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
 
   function handleSubmit(event) {
     event.preventDefault();
-    sendMessage(inputText);
+    sendMessage(inputText, 'text');
   }
 
   function toggleMic() {
@@ -160,7 +168,7 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
 
     stopSpeaking();
     const recognition = new SpeechRecognition();
-    recognition.lang = 'en-US';
+    recognition.lang = 'en-IN';
     recognition.interimResults = false;
     recognition.maxAlternatives = 1;
     recognitionRef.current = recognition;
@@ -177,7 +185,7 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
     recognition.onresult = (event) => {
       const transcript = event.results?.[0]?.[0]?.transcript || '';
       setInputText(transcript);
-      if (transcript.trim()) sendMessage(transcript);
+      if (transcript.trim()) sendMessage(transcript, 'voice');
     };
     recognition.start();
   }
@@ -194,17 +202,24 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
     a.click();
     a.remove();
     URL.revokeObjectURL(url);
+    track('download');
   }
 
   const canDownload = messages.length >= 5;
 
   return (
-    <div className="conversation fade-in">
+    <div className={`conversation fade-in ${ageId === 'older' ? 'is-older' : ''}`}>
       <header className="convo-header">
         <div>
           <p className="eyebrow">{companionName}</p>
           <p className="convo-status">
-            {isListening ? 'Listening…' : isSpeaking ? 'Speaking…' : isLoading ? 'Thinking…' : 'Here with you'}
+            {isListening
+              ? 'Listening…'
+              : isSpeaking
+                ? 'Speaking…'
+                : isLoading
+                  ? 'Thinking…'
+                  : 'Here with you'}
           </p>
         </div>
         <div className="convo-actions">
@@ -218,26 +233,38 @@ export default function Conversation({ companionName, avatarStyle, onStartOver }
               Stop speaking
             </button>
           ) : null}
-          <button type="button" className="btn-ghost" onClick={() => setEnding(true)}>
+          <button
+            type="button"
+            className="btn-ghost"
+            onClick={() => {
+              track('end_session');
+              setEnding(true);
+            }}
+          >
             End session
           </button>
         </div>
       </header>
 
       <div className="avatar-stage">
-        <Avatar
+        <VideoAvatar
           style={avatarStyle}
           isSpeaking={isSpeaking}
           isListening={isListening}
-          size={200}
         />
       </div>
 
+      {demoMode ? (
+        <p className="demo-note" role="status">
+          Presence mode — replies are on-device until an API key is set. Still not stored.
+        </p>
+      ) : null}
+
       {showCrisis ? (
         <div className="crisis-banner" role="alert">
-          If you are in crisis, please reach out now — iCall (India){' '}
-          <a href="tel:9152987821">9152987821</a> or 988 Lifeline (US) <a href="tel:988">988</a>.
-          You don&apos;t have to face this alone.
+          If you are in crisis, please reach out now — iCall{' '}
+          <a href="tel:9152987821">9152987821</a> or Vandrevala{' '}
+          <a href="tel:9999666555">9999666555</a>. You don&apos;t have to face this alone.
         </div>
       ) : null}
 

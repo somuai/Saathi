@@ -27,4 +27,4 @@ that helps them process grief. Voice in + voice out + animated face.
 - API keys live in .env, never in client code
 - Keep responses ≤3 sentences unless user asks for more
 - The avatar mouth animates while TTS is speaking (`isSpeaking` prop)
-- Crisis language must surface 988 (US) and iCall 9152987821 (India)
+- Crisis language must surface iCall 9152987821 and Vandrevala 9999666555 first (India). English voice for now; faces are Indian.

@@ -14,7 +14,8 @@
     "start": "npm run start -w server"
   },
   "devDependencies": {
-    "concurrently": "^9.1.2"
+    "concurrently": "^9.1.2",
+    "pptxgenjs": "^4.0.1"
   },
   "engines": {
     "node": ">=18"

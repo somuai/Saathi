@@ -1,4 +1,5 @@
 import { useState } from 'react';
+import { track } from './analytics.js';
 
 export default function Waitlist({ heading, subcopy }) {
   const [email, setEmail] = useState('');
@@ -17,6 +18,7 @@ export default function Waitlist({ heading, subcopy }) {
       });
       const data = await res.json().catch(() => ({}));
       if (!res.ok) throw new Error(data.error || 'Could not join right now.');
+      track('waitlist');
       setStatus('done');
     } catch (err) {
       setStatus('idle');
