@@ -4,6 +4,8 @@ A working **MVP**: a live video call with **Maya**, an AI grief companion for In
 
 This is the smallest thing that can be judged as a product — not a finished therapy service.
 
+**Live (for judges):** https://saath-81jt.onrender.com
+
 ## For reviewers
 
 - Open the live URL in Chrome (laptop if you can).
