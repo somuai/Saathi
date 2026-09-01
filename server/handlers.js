@@ -485,7 +485,7 @@ function parseReport(raw, fallbackTurns) {
 
 async function callGemini(systemPrompt, userText) {
   const key = process.env.GEMINI_API_KEY;
-  const models = ['gemini-2.5-flash', 'gemini-2.0-flash', 'gemini-flash-latest'];
+  const models = ['gemini-3.6-flash', 'gemini-flash-latest', 'gemini-2.5-flash'];
   let last = 'Gemini unavailable';
   for (const model of models) {
     const response = await fetch(
