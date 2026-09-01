@@ -3,6 +3,7 @@ import LandingPage from './LandingPage.jsx';
 import Conversation from './Conversation.jsx';
 import Pulse from './Pulse.jsx';
 import CallRoom from './CallRoom.jsx';
+import AfterCall from './AfterCall.jsx';
 import VideoAvatar from './VideoAvatar.jsx';
 import { track } from './analytics.js';
 
@@ -47,6 +48,12 @@ export default function App() {
     }
   }
 
+  function handleWrap() {
+    track('end_session');
+    setCallUrl('');
+    setPhase('wrap');
+  }
+
   function handleEndCall() {
     track('end_session');
     setCallUrl('');
@@ -73,7 +80,10 @@ export default function App() {
         </div>
       ) : null}
       {phase === 'call' && callUrl ? (
-        <CallRoom url={callUrl} conversationId={conversationId} onEnd={handleEndCall} />
+        <CallRoom url={callUrl} conversationId={conversationId} onWrap={handleWrap} />
+      ) : null}
+      {phase === 'wrap' ? (
+        <AfterCall conversationId={conversationId} onDone={handleEndCall} />
       ) : null}
       {phase === 'conversation' ? (
         <>

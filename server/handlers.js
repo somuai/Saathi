@@ -346,3 +346,103 @@ export async function conversationEndHandler(req, res) {
   }
   res.status(200).json({ ok: true });
 }
+
+function cleanTurn(text) {
+  return String(text || '')
+    .replace(/USER_SPEECH:\s*/gi, '')
+    .replace(/VISUAL[_\s-]?SCENE:[\s\S]*/gi, '')
+    .replace(/\s+/g, ' ')
+    .trim();
+}
+
+function extractTranscript(data) {
+  const events = Array.isArray(data?.events) ? data.events : [];
+  const ready = events.find((e) => e.event_type === 'application.transcription_ready');
+  const raw = ready?.properties?.transcript || data?.transcript || [];
+  return raw
+    .filter((t) => t && (t.role === 'user' || t.role === 'assistant'))
+    .map((t) => ({ role: t.role, content: cleanTurn(t.content).slice(0, 800) }))
+    .filter((t) => t.content);
+}
+
+function localSummary(turns) {
+  const userText = turns
+    .filter((t) => t.role === 'user')
+    .map((t) => t.content)
+    .join(' ')
+    .toLowerCase();
+  const heard = turns
+    .filter((t) => t.role === 'user')
+    .slice(-3)
+    .map((t) => t.content)
+    .join(' ');
+  const summary = heard
+    ? `Tonight you spoke, and Maya stayed with you. You named this: “${heard.slice(0, 220)}${heard.length > 220 ? '…' : ''}”. That is enough for one sitting.`
+    : 'Tonight you sat with Maya for a short while. Even a few minutes counts. You do not have to have said everything.';
+  const next = ['Drink a glass of water and stay in this room for the next ten minutes.'];
+  if (/exam|jee|neet|board|rank|kota|paper/.test(userText)) {
+    next.push('Do not open the exam app or compare ranks tonight. That can wait until morning.');
+  } else if (/divorce|broke|left me|marriage|husband|wife|ex\b/.test(userText)) {
+    next.push('One kind thing for your body — tea, a wash, or sitting by a window.');
+  } else if (/business|shop|laid off|job|company|failed/.test(userText)) {
+    next.push('Write one sentence: what you carried today. Not a plan. One sentence.');
+  } else if (/died|death|passed|ammi|abba|papa|mummy|maa\b|dad\b|mom\b/.test(userText)) {
+    next.push('If a photo or a belonging is nearby, you may sit with it. You do not have to put it away.');
+  } else {
+    next.push('If you can, name one person you could text tomorrow. You do not have to text tonight.');
+  }
+  next.push('If you feel unsafe: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019.');
+  return { summary, next };
+}
+
+async function waitForTranscript(id) {
+  for (let i = 0; i < 12; i += 1) {
+    const response = await fetch(`https://tavusapi.com/v2/conversations/${id}?verbose=true`, {
+      headers: tavusHeaders(),
+    });
+    const data = await response.json().catch(() => ({}));
+    const turns = extractTranscript(data);
+    if (turns.length) return turns;
+    await new Promise((r) => setTimeout(r, 1500));
+  }
+  return [];
+}
+
+export async function conversationSummaryHandler(req, res) {
+  const id = String(req.params?.id || '').replace(/[^a-zA-Z0-9_-]/g, '');
+  if (!id || !process.env.TAVUS_API_KEY) {
+    res.status(400).json({ error: 'Missing conversation' });
+    return;
+  }
+  try {
+    await fetch(`https://tavusapi.com/v2/conversations/${id}/end`, {
+      method: 'POST',
+      headers: tavusHeaders(),
+    });
+  } catch {
+    /* already ended */
+  }
+
+  try {
+    const turns = await waitForTranscript(id);
+    if (process.env.XAI_API_KEY && turns.length) {
+      const blob = turns.map((t) => `${t.role === 'user' ? 'You' : 'Maya'}: ${t.content}`).join('\n');
+      const raw = await callXai(
+        `You write a brief after-call note for Saath, an AI grief companion in India. Return JSON only: {"summary":"2-4 warm sentences, no diagnosis","next":["three tiny next-hour actions"]}. No markdown. No medical advice. If crisis language appeared, the last next-step must be India helplines: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019.`,
+        [{ role: 'user', content: blob.slice(0, 6000) }],
+      );
+      const jsonText = raw.replace(/```json|```/g, '').trim();
+      const parsed = JSON.parse(jsonText);
+      if (parsed?.summary) {
+        res.status(200).json({
+          summary: String(parsed.summary).slice(0, 800),
+          next: (Array.isArray(parsed.next) ? parsed.next : []).map((x) => String(x).slice(0, 200)).slice(0, 4),
+        });
+        return;
+      }
+    }
+    res.status(200).json(localSummary(turns));
+  } catch {
+    res.status(200).json(localSummary([]));
+  }
+}

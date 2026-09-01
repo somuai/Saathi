@@ -11,6 +11,7 @@ import {
   avatarSessionHandler,
   conversationStatusHandler,
   conversationEndHandler,
+  conversationSummaryHandler,
 } from './handlers.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
@@ -32,6 +33,7 @@ app.post('/api/event', eventHandler);
 app.post('/api/avatar-session', avatarSessionHandler);
 app.get('/api/conversation/:id', conversationStatusHandler);
 app.post('/api/conversation/:id/end', conversationEndHandler);
+app.post('/api/conversation/:id/summary', conversationSummaryHandler);
 
 if (process.env.NODE_ENV === 'production') {
   const dist = path.join(__dirname, '..', 'client', 'dist');

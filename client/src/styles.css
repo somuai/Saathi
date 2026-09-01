@@ -869,6 +869,88 @@ a:focus-visible,
   font-size: 0.85rem;
 }
 
+.call-timer {
+  display: flex;
+  align-items: center;
+  gap: 0.55rem;
+  min-width: 12rem;
+  color: #e8eef8;
+}
+
+.call-timer strong {
+  font-variant-numeric: tabular-nums;
+  font-size: 1.15rem;
+  letter-spacing: 0.04em;
+}
+
+.call-timer-label {
+  color: #9aa7b8;
+  font-size: 0.8rem;
+}
+
+.call-timer-track {
+  display: inline-block;
+  width: 5.5rem;
+  height: 0.35rem;
+  border-radius: 99px;
+  background: #243044;
+  overflow: hidden;
+}
+
+.call-timer-track span {
+  display: block;
+  height: 100%;
+  background: #2a67ff;
+}
+
+.call-timer.is-low strong,
+.call-timer.is-low .call-timer-label {
+  color: #ff7a45;
+}
+
+.call-timer.is-low .call-timer-track span {
+  background: #ff7a45;
+}
+
+.after-call {
+  max-width: 720px;
+  margin: 0 auto;
+  padding: 1.15rem 1.25rem 5rem;
+}
+
+.after-call-body h1 {
+  margin: 0 0 1rem;
+}
+
+.after-card {
+  background: #fff;
+  border: 1px solid var(--border);
+  border-radius: 1.1rem;
+  padding: 1.15rem 1.25rem;
+  margin: 0 0 1rem;
+}
+
+.after-card h2 {
+  margin: 0 0 0.45rem;
+  font-size: 1rem;
+}
+
+.after-card p,
+.after-card li {
+  margin: 0;
+  color: var(--ink);
+  line-height: 1.55;
+}
+
+.after-card ol {
+  margin: 0;
+  padding-left: 1.2rem;
+}
+
+.after-card li + li {
+  margin-top: 0.45rem;
+}
+
 .call-frame {
   flex: 1;
   width: 100%;
