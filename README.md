@@ -10,7 +10,7 @@ This is the smallest shippable product that can be judged — not a finished the
 |---|---|
 | **Live** | [https://saath-81jt.onrender.com](https://saath-81jt.onrender.com) |
 | **Source** | [github.com/somuai/Saathi](https://github.com/somuai/Saathi) |
-| **Companion** | Maya (Tavus PAL, Mary–Home, Hindi + English) |
+| **Companion** | Maya (Tavus PAL `pe877b0fc929`, Mary–Home, Hindi + English). Maker page: [Maya Link](https://maker.tavus.io/deployments/7b2b95a3-b71f-4488-8606-aaeaf168e2f2) |
 | **North star** | `call_started` — live video rooms that actually open |
 
 ---
@@ -146,6 +146,7 @@ npm install
 # server/.env — never commit this file
 #   TAVUS_API_KEY=
 #   TAVUS_PAL_ID=pe877b0fc929
+#   TAVUS_DEPLOYMENT_ID=7b2b95a3-b71f-4488-8606-aaeaf168e2f2
 #   GEMINI_API_KEY=          # sitting note
 #   XAI_API_KEY=             # optional, needs credits
 npm run dev
@@ -166,7 +167,7 @@ Render Web Service from this repo (`render.yaml`).
 | Build | `npm install --include=dev && npm run build` |
 | Start | `npm start` |
 | Health | `/api/health` |
-| Env | `NODE_ENV=production` · `TAVUS_API_KEY` · `TAVUS_PAL_ID` · `GEMINI_API_KEY` · `PUBLIC_ORIGIN` |
+| Env | `NODE_ENV=production` · `TAVUS_API_KEY` · `TAVUS_PAL_ID` · `TAVUS_DEPLOYMENT_ID` · `GEMINI_API_KEY` · `PUBLIC_ORIGIN` |
 
 Do not put keys in git. Rotate any key that has been pasted into chat.
 

@@ -1,6 +1,9 @@
 export const PAL_NAME = 'Maya';
 export const PRODUCT_NAME = 'Saathi';
 export const PAL_ID = 'pe877b0fc929';
+export const PAL_DEPLOYMENT_ID = '7b2b95a3-b71f-4488-8606-aaeaf168e2f2';
+export const PAL_DEPLOYMENT_URL =
+  'https://maker.tavus.io/deployments/7b2b95a3-b71f-4488-8606-aaeaf168e2f2';
 
 export const CALL_LIMIT_SECONDS = 300;
 
@@ -22,8 +25,13 @@ export const PAL_OBJECTIVES = `1. intake_details — name, age, teenager or adul
 6. explore_cultural_pressures — societal or familial pressures, cultural grief in India
 7. identify_support_step — one small self-care step or a professional resource`;
 
+// Conversation context from Maya Link (PAL Maker landing-page deployment). Keep short.
+export const PAL_DEPLOYMENT_CONTEXT = `Someone to talk to, whenever you need.
+Grief is isolating. Friends get tired. Counsellors have a queue. Maya is one AI companion — a face on a video call, late at night, without waking the house`;
+
 // Keep this short. Do not fight the PAL Maker system prompt or objectives.
-export const PAL_LIVE_CONTEXT = `Saathi, India, no login, live video. Follow Maya's PAL instructions exactly. After every answer: reflect, stay, open one next door. Never go silent. Hindi if they speak Hindi. Crisis: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019, Tele-MANAS 14416. You are AI, not a clinician.`;
+export const PAL_LIVE_CONTEXT = `${PAL_DEPLOYMENT_CONTEXT}
+Follow Maya's PAL instructions exactly. After every answer: reflect, stay, open one next door. Never go silent. Hindi if they speak Hindi. Crisis: iCall 9152987821, Vandrevala 9999666555, KIRAN 1800-599-0019, Tele-MANAS 14416. You are AI, not a clinician.`;
 
 export const PAL_CONTEXT = PAL_LIVE_CONTEXT;
 

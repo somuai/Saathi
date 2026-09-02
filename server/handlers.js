@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { PAL_LIVE_CONTEXT, PAL_CONTEXT } from './pal-prompt.js';
+import { PAL_LIVE_CONTEXT, PAL_CONTEXT, PAL_DEPLOYMENT_ID } from './pal-prompt.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -219,10 +219,11 @@ export async function avatarSessionHandler(req, res) {
 
   const tavusKey = process.env.TAVUS_API_KEY;
   const palId = process.env.TAVUS_PAL_ID;
+  const deploymentId = process.env.TAVUS_DEPLOYMENT_ID || PAL_DEPLOYMENT_ID;
   const ageId = String(req.body?.ageId || 'unspecified').slice(0, 20);
   const lossId = String(req.body?.lossId || 'unspecified').slice(0, 20);
 
-  if (tavusKey && palId) {
+  if (tavusKey && (deploymentId || palId)) {
     try {
       const headers = {
         'Content-Type': 'application/json',
@@ -237,22 +238,33 @@ export async function avatarSessionHandler(req, res) {
           await fetch(`https://tavusapi.com/v2/conversations/${id}/end`, { method: 'POST', headers });
         }
       }
-      const response = await fetch('https://tavusapi.com/v2/conversations', {
-        method: 'POST',
-        headers,
-        body: JSON.stringify({
-          pal_id: palId,
-          conversation_name: 'Saathi',
-          conversational_context: `${PAL_LIVE_CONTEXT} Life stage chip: ${ageId}. Loss chip: ${lossId}.`,
-          properties: {
-            // Free/Starter cap is 5 minutes; Tavus will clamp if the plan is lower.
-            max_call_duration: 300,
-            // Default is 0: any iframe blip or tab switch ends the room immediately.
-            participant_left_timeout: 60,
-            participant_absent_timeout: 300,
-          },
-        }),
-      });
+      const chipContext = `${PAL_LIVE_CONTEXT} Life stage chip: ${ageId}. Loss chip: ${lossId}.`;
+      // Prefer the PAL Maker landing-page deployment so Maya's greeting, context, captions, and sitting stay hers.
+      let response = deploymentId
+        ? await fetch(`https://tavusapi.com/v2/deployments/${deploymentId}/start`, {
+            method: 'POST',
+            headers,
+            body: JSON.stringify({
+              conversational_context: chipContext,
+            }),
+          })
+        : null;
+      if ((!response || !response.ok) && palId) {
+        response = await fetch('https://tavusapi.com/v2/conversations', {
+          method: 'POST',
+          headers,
+          body: JSON.stringify({
+            pal_id: palId,
+            conversation_name: 'Saathi',
+            conversational_context: chipContext,
+            properties: {
+              max_call_duration: 300,
+              participant_left_timeout: 60,
+              participant_absent_timeout: 300,
+            },
+          }),
+        });
+      }
       const data = await response.json().catch(() => ({}));
       if (!response.ok) {
         res.status(200).json({
