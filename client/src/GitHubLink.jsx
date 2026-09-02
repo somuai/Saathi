@@ -1,4 +1,4 @@
-export const GITHUB_REPO = 'https://github.com/somuai/saath';
+export const GITHUB_REPO = 'https://github.com/somuai/Saathi';
 
 export default function GitHubLink({ className = '' }) {
   return (

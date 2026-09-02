@@ -9,7 +9,7 @@ This is the smallest shippable product that can be judged — not a finished the
 | | |
 |---|---|
 | **Live** | [https://saath-81jt.onrender.com](https://saath-81jt.onrender.com) |
-| **Source** | [github.com/somuai/saath](https://github.com/somuai/saath) |
+| **Source** | [github.com/somuai/Saathi](https://github.com/somuai/Saathi) |
 | **Companion** | Maya (Tavus PAL, Mary–Home, Hindi + English) |
 | **North star** | `call_started` — live video rooms that actually open |
 
@@ -104,7 +104,7 @@ On free Render the disk is ephemeral: Pulse can reset on redeploy. Screenshot if
 4. **One live room.** A second Join ends the first.  
 5. She asks your name, then the weight, then one breath, then stays.  
 6. Watch the timer. **End call** → sitting note. Open **Pulse**.  
-7. Octocat in the nav → this repo (ask to be added as a collaborator if you get a 404; the repo is private).
+7. Octocat in the nav → this repo.
 
 ---
 
