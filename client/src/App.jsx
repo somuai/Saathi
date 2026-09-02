@@ -4,6 +4,7 @@ import Conversation from './Conversation.jsx';
 import Pulse from './Pulse.jsx';
 import CallRoom from './CallRoom.jsx';
 import AfterCall from './AfterCall.jsx';
+import Observatory from './Observatory.jsx';
 import VideoAvatar from './VideoAvatar.jsx';
 import { track } from './analytics.js';
 
@@ -18,6 +19,8 @@ export default function App() {
   const [callUrl, setCallUrl] = useState('');
   const [conversationId, setConversationId] = useState('');
   const [callStartedAt, setCallStartedAt] = useState(0);
+  const [sessionId, setSessionId] = useState('');
+  const [callDuration, setCallDuration] = useState(0);
   const [joinError, setJoinError] = useState('');
 
   async function handleStart(next) {
@@ -26,8 +29,12 @@ export default function App() {
     setCallUrl('');
     setConversationId('');
     setCallStartedAt(0);
+    setCallDuration(0);
+    const sid = globalThis.crypto?.randomUUID?.() || `s_${Date.now()}`;
+    setSessionId(sid);
     setPhase('joining');
-    track('session_start', { age: next.ageId, loss: next.lossId });
+    track('session_start', { age: next.ageId, loss: next.lossId, session_id: sid });
+    track('conversation_requested', { age: next.ageId, loss: next.lossId, session_id: sid });
     try {
       const res = await fetch('/api/avatar-session', {
         method: 'POST',
@@ -36,7 +43,18 @@ export default function App() {
       });
       const data = await res.json().catch(() => ({}));
       if (data.conversationUrl) {
-        track('call_started', { age: next.ageId, loss: next.lossId });
+        track('call_started', {
+          age: next.ageId,
+          loss: next.lossId,
+          session_id: sid,
+          conversation_id: data.conversationId,
+          provider: 'tavus',
+        });
+        track('conversation_started', {
+          session_id: sid,
+          conversation_id: data.conversationId,
+          provider: 'tavus',
+        });
         setCallUrl(data.conversationUrl);
         setConversationId(data.conversationId || '');
         setCallStartedAt(Date.now());
@@ -52,7 +70,15 @@ export default function App() {
   }
 
   function handleWrap() {
-    track('end_session');
+    const duration_s = callStartedAt ? Math.max(1, Math.round((Date.now() - callStartedAt) / 1000)) : 0;
+    setCallDuration(duration_s);
+    track('end_session', { session_id: sessionId, conversation_id: conversationId, duration_s });
+    track('conversation_completed', {
+      session_id: sessionId,
+      conversation_id: conversationId,
+      duration_s,
+      completed: true,
+    });
     setCallUrl('');
     setPhase('wrap');
   }
@@ -74,7 +100,12 @@ export default function App() {
       {phase === 'landing' ? (
         <LandingPage onStart={handleStart} onOpenPulse={() => setPhase('pulse')} />
       ) : null}
-      {phase === 'pulse' ? <Pulse onBack={() => setPhase('landing')} /> : null}
+      {phase === 'pulse' ? (
+        <Pulse onBack={() => setPhase('landing')} onOpenObservatory={() => setPhase('observatory')} />
+      ) : null}
+      {phase === 'observatory' ? (
+        <Observatory onBack={() => setPhase('pulse')} />
+      ) : null}
       {phase === 'joining' ? (
         <div className="join-screen fade-in">
           <VideoAvatar style="warm" isSpeaking isListening={false} />
@@ -91,7 +122,12 @@ export default function App() {
         />
       ) : null}
       {phase === 'wrap' ? (
-        <AfterCall conversationId={conversationId} onDone={handleEndCall} />
+        <AfterCall
+          conversationId={conversationId}
+          sessionId={sessionId}
+          duration_s={callDuration}
+          onDone={handleEndCall}
+        />
       ) : null}
       {phase === 'conversation' ? (
         <>

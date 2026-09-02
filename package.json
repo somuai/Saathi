@@ -11,7 +11,9 @@
   "scripts": {
     "dev": "concurrently -n client,server -c cyan,magenta \"npm run dev -w client\" \"npm run start -w server\"",
     "build": "npm run build -w client",
-    "start": "npm run start -w server"
+    "start": "npm run start -w server",
+    "test": "node --test server/observatory/observatory.test.js",
+    "seed:observatory": "node server/observatory/seed.js"
   },
   "devDependencies": {
     "concurrently": "^9.1.2",

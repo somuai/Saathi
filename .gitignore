@@ -2,6 +2,7 @@
 .env.local
 server/.env
 server/pulse.json
+server/data/
 node_modules
 dist
 .vercel

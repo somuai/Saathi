@@ -1,6 +1,8 @@
 import { useEffect, useMemo, useState } from 'react';
 import Logo from './Logo.jsx';
 import GitHubLink from './GitHubLink.jsx';
+import SupportRating from './SupportRating.jsx';
+import { getVisitorId, track } from './analytics.js';
 
 const PIE_COLORS = ['#2A67FF', '#FF7A45', '#6F8F71', '#C4A35A', '#7B6C9A', '#4A90A4'];
 
@@ -15,9 +17,10 @@ function pieBackground(themes) {
   return `conic-gradient(${stops.join(', ')})`;
 }
 
-export default function AfterCall({ conversationId, onDone }) {
+export default function AfterCall({ conversationId, sessionId, duration_s = 0, onDone }) {
   const [data, setData] = useState(null);
   const [error, setError] = useState('');
+  const [rated, setRated] = useState(false);
 
   useEffect(() => {
     if (!conversationId) {
@@ -56,6 +59,27 @@ export default function AfterCall({ conversationId, onDone }) {
       <main className="after-call-body">
         <p className="eyebrow">Sitting note · DAP style</p>
         <h1>After tonight</h1>
+        <SupportRating
+          submitted={rated}
+          onSubmit={(rating) => {
+            setRated(true);
+            const visitor_id = getVisitorId();
+            fetch('/api/observatory/rating', {
+              method: 'POST',
+              headers: { 'Content-Type': 'application/json' },
+              body: JSON.stringify({
+                session_id: sessionId || conversationId || `s_${Date.now()}`,
+                visitor_id,
+                conversation_id: conversationId,
+                rating,
+                duration_s,
+                turns: 0,
+                completed: true,
+                infra_failed: false,
+              }),
+            }).catch(() => {});
+          }}
+        />
         <p className="fine-print after-banner">
           This is an AI companion note, not a psychologist’s file and not a diagnosis. It is not stored
           here. Modelled on how counsellors write Data, Assessment, and Plan.
@@ -134,7 +158,20 @@ export default function AfterCall({ conversationId, onDone }) {
             </p>
           </>
         ) : null}
-        <button type="button" className="btn-primary" onClick={onDone}>
+        <button
+          type="button"
+          className="btn-primary"
+          onClick={() => {
+            if (!rated) {
+              track('support_rating_skipped', {
+                session_id: sessionId,
+                conversation_id: conversationId,
+                duration_s,
+              });
+            }
+            onDone();
+          }}
+        >
           Done
         </button>
       </main>

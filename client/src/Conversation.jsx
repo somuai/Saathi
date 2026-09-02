@@ -118,6 +118,11 @@ export default function Conversation({
     if (CRISIS_RE.test(content)) {
       setShowCrisis(true);
       track('crisis_shown');
+      fetch('/api/observatory/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'user', text: content }),
+      }).catch(() => {});
     }
 
     const next = [...messagesRef.current, { role: 'user', content }];
@@ -143,11 +148,21 @@ export default function Conversation({
       setDemoMode(false);
       setMessages([...next, { role: 'assistant', content: reply }]);
       speak(reply);
+      fetch('/api/observatory/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'assistant', text: reply }),
+      }).catch(() => {});
     } catch {
       const reply = demoReply(content, companionName);
       setDemoMode(true);
       setMessages([...next, { role: 'assistant', content: reply }]);
       speak(reply);
+      fetch('/api/observatory/scan', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({ role: 'assistant', text: reply }),
+      }).catch(() => {});
     } finally {
       setIsLoading(false);
     }

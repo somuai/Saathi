@@ -20,11 +20,15 @@ export default function LandingPage({ onStart, onOpenPulse }) {
   function handleBegin(event) {
     event.preventDefault();
     track('start_click', { age: ageId, loss: lossId });
+    track('onboarding_started', { age: ageId, loss: lossId });
+    track('consent_viewed', { age: ageId, loss: lossId });
     setShowDisclosure(true);
   }
 
   function handleConfirm() {
     track('disclosure_accept', { age: ageId, loss: lossId });
+    track('consent_completed', { age: ageId, loss: lossId });
+    track('onboarding_completed', { age: ageId, loss: lossId });
     onStart({
       companionName: DEFAULT_NAME,
       avatarStyle: 'warm',

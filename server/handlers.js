@@ -3,6 +3,8 @@ import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
 import { PAL_LIVE_CONTEXT, PAL_CONTEXT, PAL_DEPLOYMENT_ID } from './pal-prompt.js';
+import { recordEvent } from './observatory/store.js';
+import { scanTranscriptFlags } from './observatory/http.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -239,6 +241,7 @@ export async function avatarSessionHandler(req, res) {
         }
       }
       const chipContext = `${PAL_LIVE_CONTEXT} Life stage chip: ${ageId}. Loss chip: ${lossId}.`;
+      const started = Date.now();
       // Prefer the PAL Maker landing-page deployment so Maya's greeting, context, captions, and sitting stay hers.
       let response = deploymentId
         ? await fetch(`https://tavusapi.com/v2/deployments/${deploymentId}/start`, {
@@ -266,13 +269,28 @@ export async function avatarSessionHandler(req, res) {
         });
       }
       const data = await response.json().catch(() => ({}));
+      const latency_ms = Date.now() - started;
       if (!response.ok) {
+        recordEvent({
+          name: 'tavus_session_failed',
+          props: { latency_ms, provider: 'tavus', ok: false },
+        });
         res.status(200).json({
           provider: 'loop',
           error: apiError(data, 'Tavus unavailable'),
         });
         return;
       }
+      recordEvent({
+        name: 'tavus_session_created',
+        conversation_id: data.conversation_id,
+        props: { latency_ms, provider: 'tavus', ok: true, stage: 'session_create' },
+      });
+      recordEvent({
+        name: 'latency_sample',
+        conversation_id: data.conversation_id,
+        props: { latency_ms, stage: 'session_create' },
+      });
       res.status(200).json({
         provider: 'tavus',
         conversationUrl: data.conversation_url,
@@ -280,6 +298,10 @@ export async function avatarSessionHandler(req, res) {
       });
       return;
     } catch (err) {
+      recordEvent({
+        name: 'tavus_session_failed',
+        props: { provider: 'tavus', ok: false, reason: 'exception' },
+      });
       res.status(200).json({ provider: 'loop', error: err.message });
       return;
     }
@@ -549,6 +571,7 @@ export async function conversationSummaryHandler(req, res) {
 
   try {
     const turns = await waitForTranscript(id);
+    scanTranscriptFlags(turns, { conversation_id: id });
     const blob = turns.map((t) => `${t.role === 'user' ? 'You' : 'Maya'}: ${t.content}`).join('\n').slice(0, 6000);
     if (blob && process.env.GEMINI_API_KEY) {
       try {

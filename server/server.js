@@ -13,6 +13,18 @@ import {
   conversationEndHandler,
   conversationSummaryHandler,
 } from './handlers.js';
+import {
+  observatoryEventHandler,
+  ratingHandler,
+  kpisHandler,
+  configGetHandler,
+  configPatchHandler,
+  scanHandler,
+  evalHandler,
+  experimentsHandler,
+  privacyDeleteHandler,
+  memoryHandler,
+} from './observatory/http.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 const app = express();
@@ -34,6 +46,17 @@ app.post('/api/avatar-session', avatarSessionHandler);
 app.get('/api/conversation/:id', conversationStatusHandler);
 app.post('/api/conversation/:id/end', conversationEndHandler);
 app.post('/api/conversation/:id/summary', conversationSummaryHandler);
+app.post('/api/observatory/event', observatoryEventHandler);
+app.post('/api/observatory/rating', ratingHandler);
+app.get('/api/observatory/kpis', kpisHandler);
+app.get('/api/observatory/config', configGetHandler);
+app.patch('/api/observatory/config', configPatchHandler);
+app.post('/api/observatory/scan', scanHandler);
+app.get('/api/observatory/eval', evalHandler);
+app.get('/api/observatory/experiments', experimentsHandler);
+app.post('/api/privacy/delete', privacyDeleteHandler);
+app.get('/api/observatory/memory', memoryHandler);
+app.post('/api/observatory/memory', memoryHandler);
 
 if (process.env.NODE_ENV === 'production') {
   const dist = path.join(__dirname, '..', 'client', 'dist');

@@ -86,7 +86,9 @@ iCall `9152987821` · Vandrevala `9999666555` · KIRAN `1800-599-0019` · Tele-M
 
 ## Metrics (Pulse)
 
-In-product **Pulse** in the nav. Counts only — never speech.
+In-product **Pulse** in the nav. Counts only — never speech. This is the intern 24-hour demo scoreboard. Live calls started is the *demo* north star for judging that rooms open.
+
+Product north star (Observatory): **MSSR** — sittings rated *Quite a bit* or *Very much* on “Did this conversation help you feel heard or supported?” Pulse → **Observatory**.
 
 | KPI | 24h demo target | Why it exists |
 |---|---|---|
@@ -128,12 +130,40 @@ Say these out loud. Do not hide them.
 
 ## Stack
 
-Vite + React client · Express `/api` · Tavus CVI (PAL `pe877b0fc929`) · Gemini for the after-call note · Pulse counts in `server/pulse.json`
+Vite + React client · Express `/api` · Tavus CVI (PAL `pe877b0fc929`) · Gemini for the after-call note · Pulse counts in `server/pulse.json` · Observatory KPIs in `server/observatory/` (JSONL now, PostgreSQL schema in `server/observatory/schema.sql`)
 
 ```
-client/src     landing, call room, sitting note, Pulse
+client/src     landing, call room, sitting note, Pulse, Observatory
 server/        conversation create, transcript → note, events
+server/observatory   MSSR, safety, eval bench, experiments
 deck/          pitch copy + slide images
+```
+
+### Observatory (product KPIs)
+
+Principle: **helpful, safe, trusted sittings — not addictive engagement.** Time spent, streaks, DAU, and conversation count are diagnostic only.
+
+```
+landing → disclosure → Maya room → sitting complete → MSSR rating (4–5)
+```
+
+- After a sitting, the first question is the MSSR prompt. Skip is allowed and counted.
+- Safety flags sit beside MSSR. Crisis false negatives are first-class.
+- Analytics events never include speech. Memory evidence store is **off**.
+- Config thresholds live in `server/observatory/config.js` (override `server/data/kpi-config.json`).
+- Synthetic quality bench: 500 grief-support conversations generated in `eval.js`.
+- `npm test` · `npm run seed:observatory` for a local dashboard.
+
+```mermaid
+flowchart TD
+  landing[Landing] --> disclosure[AI disclosure]
+  disclosure --> tavus[Tavus Maya room]
+  tavus --> wrap[End call]
+  wrap --> mssr[MSSR rating]
+  wrap --> note[Sitting note not stored]
+  mssr --> obs[Observatory]
+  tavus --> flags[Safety scan flags only]
+  flags --> obs
 ```
 
 ---

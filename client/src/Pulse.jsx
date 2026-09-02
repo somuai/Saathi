@@ -20,7 +20,7 @@ function Bar({ value, target }) {
   );
 }
 
-export default function Pulse({ onBack }) {
+export default function Pulse({ onBack, onOpenObservatory }) {
   const [server, setServer] = useState(null);
   const local = summarizeLocal();
 
@@ -47,6 +47,11 @@ export default function Pulse({ onBack }) {
       <header className="landing-header">
         <span className="logo">Product pulse</span>
         <div className="nav-links">
+          {onOpenObservatory ? (
+            <button type="button" className="btn-ghost" onClick={onOpenObservatory}>
+              Observatory
+            </button>
+          ) : null}
           <GitHubLink />
           <button type="button" className="btn-ghost" onClick={onBack}>
             Back
@@ -54,8 +59,8 @@ export default function Pulse({ onBack }) {
         </div>
       </header>
       <p className="subhead">
-        Counts only — never conversation text. Server totals persist in pulse.json on this
-        machine. Unique visitors use a first-visit cookie on this browser.
+        Counts only — never conversation text. This page is the intern 24-hour demo pulse.
+        Product north star is MSSR on Observatory: sittings rated Quite a bit or Very much.
       </p>
 
       <table className="pulse-table">
