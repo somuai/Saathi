@@ -2,7 +2,7 @@ import fs from 'fs';
 import path from 'path';
 import { fileURLToPath } from 'url';
 import dotenv from 'dotenv';
-import { PAL_LIVE_CONTEXT, PAL_CONTEXT, PAL_GREETING } from './pal-prompt.js';
+import { PAL_LIVE_CONTEXT, PAL_CONTEXT } from './pal-prompt.js';
 
 const __dirname = path.dirname(fileURLToPath(import.meta.url));
 dotenv.config({ path: path.join(__dirname, '.env') });
@@ -244,7 +244,6 @@ export async function avatarSessionHandler(req, res) {
           pal_id: palId,
           conversation_name: 'Saathi',
           conversational_context: `${PAL_LIVE_CONTEXT} Life stage chip: ${ageId}. Loss chip: ${lossId}.`,
-          custom_greeting: PAL_GREETING,
           properties: {
             // Free/Starter cap is 5 minutes; Tavus will clamp if the plan is lower.
             max_call_duration: 300,

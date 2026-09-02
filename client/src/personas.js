@@ -57,7 +57,7 @@ export function getPersona(ageId, lossId) {
 
 export function greetingFor(companionName) {
   const name = companionName || 'Maya';
-  return `Hello, I'm ${name}. I'm here with you. Before we go anywhere, what would you like me to call you?`;
+  return `Hello, I'm ${name}. I'm here to listen and walk with you through this. Whenever you're ready, would you like to tell me what's on your mind?`;
 }
 
 export function pickVoice(preferredNames = []) {

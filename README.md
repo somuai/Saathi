@@ -35,17 +35,22 @@ One product. Maya changes how she sits, not her face.
 | Senior | Widowhood, children abroad, joint family thinning | Slow, honouring, continuing bonds |
 | Parent | A child’s exam or restlessness, plus their own parents | The parent’s exhaustion is real. Do not blame the child. |
 
-Optional chips on the landing. Maya still asks: *what should I call you?* then *what is sitting heaviest tonight?*
+Optional chips on the landing. Maya greets: *I'm here to listen and walk with you through this. Whenever you're ready, would you like to tell me what's on your mind?* Then name, stage, the weight, one breath, a gentle analysis, and she stays.
 
 ---
 
 ## How a sitting works
 
-1. **Name** — what to call them  
+Maya’s sitting is the PAL Maker script, not a form:
+
+1. **Name** — what to call them. Skip is fine.  
 2. **Stage** — if unknown  
-3. **The weight** — they name it; we do not guess  
-4. **One breath** — in 4, hold 4, out 6, twice. Skip if they refuse  
-5. **Stay on that wound** — no small talk restart, no stacked exercises  
+3. **Setting** — only if useful; do not pry about family  
+4. **The weight** — they name it; we do not guess  
+5. **One breath** — in 4, hold 4, out 6, twice. Skip if they refuse  
+6. **The analysis** — gentle, open questions about how the loss shows up in daily life. Not an interrogation.  
+7. **Stay on that wound** — no small talk restart, no stacked exercises  
+8. **Wrap-up** — she says the session is ending, a short summary, one self-care step  
 
 The room has a **5-minute timer**. After the call, a **sitting note** (DAP-style: data, assessment, plan) with a theme pie, next-hour steps, and a suggested cadence. The note is shown once and **not stored**.
 

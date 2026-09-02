@@ -7,9 +7,9 @@ export default function Disclosure({ name, onConfirm, onBack }) {
         <p className="eyebrow">Before you begin</p>
         <h2 id="disclosure-title">You&apos;re talking to an AI</h2>
         <p>
-          {companion} is an AI — not a counsellor, not a human. It can&apos;t replace professional
-          support, but it can listen without judgment. Be as open as you feel comfortable. We speak
-          English for now.
+          {companion} is an AI companion — not a counsellor, not a human. She can&apos;t replace
+          professional support, but she can listen without judgment. Be as open as you feel
+          comfortable. Hindi or English is fine.
         </p>
         <p className="crisis-note">
           If you&apos;re in crisis, please call iCall at <a href="tel:9152987821">9152987821</a> or
