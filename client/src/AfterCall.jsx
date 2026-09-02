@@ -1,5 +1,6 @@
 import { useEffect, useMemo, useState } from 'react';
 import Logo from './Logo.jsx';
+import GitHubLink from './GitHubLink.jsx';
 
 const PIE_COLORS = ['#2A67FF', '#FF7A45', '#6F8F71', '#C4A35A', '#7B6C9A', '#4A90A4'];
 
@@ -45,9 +46,12 @@ export default function AfterCall({ conversationId, onDone }) {
     <div className="after-call fade-in">
       <header className="nav">
         <Logo />
-        <button type="button" className="btn-ghost" onClick={onDone}>
-          Back
-        </button>
+        <div className="nav-links">
+          <GitHubLink />
+          <button type="button" className="btn-ghost" onClick={onDone}>
+            Back
+          </button>
+        </div>
       </header>
       <main className="after-call-body">
         <p className="eyebrow">Sitting note · DAP style</p>

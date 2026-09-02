@@ -190,6 +190,27 @@ a:focus-visible,
   color: #fff;
 }
 
+.github-link {
+  display: inline-flex;
+  align-items: center;
+  justify-content: center;
+  width: 2.1rem;
+  height: 2.1rem;
+  color: var(--ink);
+  opacity: 0.72;
+  border-radius: 999px;
+}
+
+.github-link:hover,
+.github-link:focus-visible {
+  opacity: 1;
+  background: rgba(42, 103, 255, 0.08);
+}
+
+.call-bar .github-link {
+  color: #e8eef8;
+}
+
 .brand {
   display: flex;
   align-items: center;

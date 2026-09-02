@@ -3,6 +3,7 @@ import VideoAvatar from './VideoAvatar.jsx';
 import Disclosure from './Disclosure.jsx';
 import Waitlist from './Waitlist.jsx';
 import Logo from './Logo.jsx';
+import GitHubLink from './GitHubLink.jsx';
 import { AGES, LOSSES } from './personas.js';
 import { DEFAULT_NAME } from './companions.js';
 import { track } from './analytics.js';
@@ -44,6 +45,7 @@ export default function LandingPage({ onStart, onOpenPulse }) {
           <button type="button" className="btn-ghost" onClick={onOpenPulse}>
             Pulse
           </button>
+          <GitHubLink />
           <a href="#start" className="btn-primary">
             Start a call
           </a>

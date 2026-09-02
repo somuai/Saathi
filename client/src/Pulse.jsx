@@ -1,5 +1,6 @@
 import { useEffect, useState } from 'react';
 import { summarizeLocal } from './analytics.js';
+import GitHubLink from './GitHubLink.jsx';
 
 const TARGETS = {
   landing_view: 100,
@@ -45,9 +46,12 @@ export default function Pulse({ onBack }) {
     <div className="pulse fade-in">
       <header className="landing-header">
         <span className="logo">Product pulse</span>
-        <button type="button" className="btn-ghost" onClick={onBack}>
-          Back
-        </button>
+        <div className="nav-links">
+          <GitHubLink />
+          <button type="button" className="btn-ghost" onClick={onBack}>
+            Back
+          </button>
+        </div>
       </header>
       <p className="subhead">
         Counts only — never conversation text. Server totals persist in pulse.json on this
