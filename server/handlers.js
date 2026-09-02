@@ -242,7 +242,7 @@ export async function avatarSessionHandler(req, res) {
         headers,
         body: JSON.stringify({
           pal_id: palId,
-          conversation_name: 'Saath',
+          conversation_name: 'Saathi',
           conversational_context: `${PAL_LIVE_CONTEXT} Life stage chip: ${ageId}. Loss chip: ${lossId}.`,
           custom_greeting: PAL_GREETING,
           properties: {
@@ -441,7 +441,7 @@ function localSummary(turns) {
   };
 }
 
-const REPORT_SYSTEM = `You write an after-sitting note for Saath, an AI grief companion in India. You are not a licensed clinician. Never diagnose. Never prescribe medication. Never shame.
+const REPORT_SYSTEM = `You write an after-sitting note for Saathi, an AI grief companion in India. You are not a licensed clinician. Never diagnose. Never prescribe medication. Never shame.
 
 Therapists use DAP notes: Data (what was said), Assessment (clinical impression without a disease label here), Plan (next steps, frequency).
 

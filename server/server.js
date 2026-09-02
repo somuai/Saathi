@@ -47,7 +47,7 @@ if (process.env.NODE_ENV === 'production') {
 }
 
 app.listen(PORT, () => {
-  console.log(`Saath server on http://localhost:${PORT}`);
+  console.log(`Saathi server on http://localhost:${PORT}`);
 });
 
 export default app;

@@ -54,7 +54,7 @@ export default function LandingPage({ onStart, onOpenPulse }) {
         <section className="hero-grid" id="start">
           <VideoAvatar style="warm" isSpeaking isListening={false} />
           <div className="hero-copy">
-            <p className="eyebrow">Saath · a video call with Maya · Hindi + English</p>
+            <p className="eyebrow">Saathi · a video call with Maya · Hindi + English</p>
             <h1>Someone to talk to, whenever you need.</h1>
             <p className="subhead">
               Grief is isolating. Friends get tired. Counsellors have a queue. Maya is one AI

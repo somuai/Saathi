@@ -17,7 +17,7 @@ const CRISIS_RE =
 function formatTranscript(companionName, messages) {
   const date = new Date().toLocaleString();
   const lines = [
-    `Saath session — ${date}`,
+    `Saathi session — ${date}`,
     `Companion: ${companionName}`,
     '---',
     ...messages.map((m) => `${m.role === 'assistant' ? companionName : 'You'}: ${m.content}`),

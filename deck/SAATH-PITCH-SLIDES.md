@@ -1,8 +1,8 @@
-# Saath — slide copy for presentations.ai
+# Saathi — slide copy for presentations.ai
 
 Use the circular bear (`client/public/logo.png`) as the only logo.
 Do not use the word GriefCompanion.
-Product: **Saath**. Companion: **Maya**. Deadline: 2 Sep 2026.
+Product: **Saathi**. Companion: **Maya**. Deadline: 2 Sep 2026.
 
 Paste one slide at a time. Keep type large. Cream `#F3F7FB`, sapphire `#2A67FF`, coral `#FF7A45`, ink `#1B2430`.
 
@@ -12,7 +12,7 @@ Paste one slide at a time. Keep type large. Cream `#F3F7FB`, sapphire `#2A67FF`,
 
 **Eyebrow:** Intern assignment · live product · 2 Sep 2026
 
-**Headline:** Saath
+**Headline:** Saathi
 
 **Subhead:** Someone to talk to at 1am, without waking the house.
 
@@ -56,7 +56,7 @@ Paste one slide at a time. Keep type large. Cream `#F3F7FB`, sapphire `#2A67FF`,
 **Body:**
 - Maya is a Tavus PAL (Mary–Home, Hindi + English).
 - Disclosure before join: she is AI.
-- The call stays inside Saath: logo, End call, crisis footer.
+- The call stays inside Saathi: logo, End call, crisis footer.
 - Nothing you say is stored here. Pulse counts only.
 
 **Session arc (this is the product, not a chatbot dump):**
@@ -144,7 +144,7 @@ Paste one slide at a time. Keep type large. Cream `#F3F7FB`, sapphire `#2A67FF`,
 
 ## Slide 10 — Close
 
-**Headline:** Saath. With you.
+**Headline:** Saathi. With you.
 
 **Three lines:**
 - A named AI on a video call, for Indian grief that has nowhere to go at night.

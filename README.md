@@ -1,4 +1,4 @@
-# Saath
+# Saathi
 
 A working **MVP**: a live video call with **Maya**, an AI grief companion for India. Not a counsellor. No sign-up. We do not store what you say.
 
