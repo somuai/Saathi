@@ -17,6 +17,7 @@ export default function App() {
   });
   const [callUrl, setCallUrl] = useState('');
   const [conversationId, setConversationId] = useState('');
+  const [callStartedAt, setCallStartedAt] = useState(0);
   const [joinError, setJoinError] = useState('');
 
   async function handleStart(next) {
@@ -24,6 +25,7 @@ export default function App() {
     setJoinError('');
     setCallUrl('');
     setConversationId('');
+    setCallStartedAt(0);
     setPhase('joining');
     track('session_start', { age: next.ageId, loss: next.lossId });
     try {
@@ -37,6 +39,7 @@ export default function App() {
         track('call_started', { age: next.ageId, loss: next.lossId });
         setCallUrl(data.conversationUrl);
         setConversationId(data.conversationId || '');
+        setCallStartedAt(Date.now());
         setPhase('call');
         return;
       }
@@ -80,7 +83,12 @@ export default function App() {
         </div>
       ) : null}
       {phase === 'call' && callUrl ? (
-        <CallRoom url={callUrl} conversationId={conversationId} onWrap={handleWrap} />
+        <CallRoom
+          url={callUrl}
+          conversationId={conversationId}
+          startedAt={callStartedAt}
+          onWrap={handleWrap}
+        />
       ) : null}
       {phase === 'wrap' ? (
         <AfterCall conversationId={conversationId} onDone={handleEndCall} />

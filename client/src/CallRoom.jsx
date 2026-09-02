@@ -10,9 +10,10 @@ function formatTime(seconds) {
   return `${m}:${String(r).padStart(2, '0')}`;
 }
 
-export default function CallRoom({ url, conversationId, onEnd, onWrap }) {
+export default function CallRoom({ url, conversationId, startedAt, onWrap }) {
   const [left, setLeft] = useState(LIMIT);
   const wrapping = useRef(false);
+  const wrapRef = useRef(() => {});
 
   function wrap() {
     if (wrapping.current) return;
@@ -22,17 +23,17 @@ export default function CallRoom({ url, conversationId, onEnd, onWrap }) {
     }
     onWrap();
   }
+  wrapRef.current = wrap;
 
   useEffect(() => {
-    const started = Date.now();
+    const origin = startedAt || Date.now();
     const tick = setInterval(() => {
-      const remain = LIMIT - Math.floor((Date.now() - started) / 1000);
+      const remain = LIMIT - Math.floor((Date.now() - origin) / 1000);
       setLeft(remain);
-      if (remain <= 0) wrap();
-    }, 250);
+      if (remain <= 0) wrapRef.current();
+    }, 1000);
     return () => clearInterval(tick);
-    // eslint-disable-next-line react-hooks/exhaustive-deps
-  }, [conversationId]);
+  }, [conversationId, startedAt]);
 
   useEffect(() => {
     if (!conversationId) return undefined;
@@ -42,19 +43,19 @@ export default function CallRoom({ url, conversationId, onEnd, onWrap }) {
       try {
         const res = await fetch(`/api/conversation/${conversationId}`);
         const data = await res.json().catch(() => ({}));
-        if (!stopped && data.status && data.status !== 'active') wrap();
+        if (!stopped && data.status === 'ended') wrapRef.current();
       } catch {
-        /* keep going */
+        /* keep the sitting going */
       }
     }
 
-    check();
-    const timer = setInterval(check, 8000);
+    const start = setTimeout(check, 20000);
+    const timer = setInterval(check, 15000);
     return () => {
       stopped = true;
+      clearTimeout(start);
       clearInterval(timer);
     };
-    // eslint-disable-next-line react-hooks/exhaustive-deps
   }, [conversationId]);
 
   const low = left <= 60;
@@ -65,7 +66,7 @@ export default function CallRoom({ url, conversationId, onEnd, onWrap }) {
       <header className="call-bar">
         <Logo compact />
         <div className={`call-timer ${low ? 'is-low' : ''}`} aria-live="polite">
-          <span className="call-timer-label">{low ? 'About a minute left' : 'Time left'}</span>
+          <span className="call-timer-label">{low ? 'About a minute left' : '5 min sitting'}</span>
           <strong>{formatTime(left)}</strong>
           <span className="call-timer-track" aria-hidden="true">
             <span style={{ width: `${pct}%` }} />
