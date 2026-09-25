@@ -210,6 +210,3 @@ Do not put keys in git. Rotate any key that has been pasted into chat.
 - Video script: `deck/PITCH-VIDEO-SCRIPT.md`  
 - Knowledge sources: `deck/KNOWLEDGE.md`
 
----
-
-Intern assignment · 2 Sep 2026 · Working MVP
